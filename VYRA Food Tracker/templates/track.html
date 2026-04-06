@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Track Order - Food Delivery</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .track-container { max-width: 800px; margin: 0 auto; }
+        
+        .tab-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .search-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .search-box input {
+            flex: 2;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .search-box button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .search-box button:hover {
+            background: #2563eb;
+            transform: scale(1.02);
+        }
+        
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .order-id {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .status-placed { background: #f59e0b; color: white; }
+        .status-preparing { background: #3b82f6; color: white; }
+        .status-out { background: #8b5cf6; color: white; }
+        .status-delivered { background: #22c55e; color: white; }
+        
+        .progress-container {
+            margin: 20px 0;
+        }
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .step {
+            text-align: center;
+            flex: 1;
+            font-size: 12px;
+            color: #999;
+            padding: 5px;
+        }
+        .step.active {
+            color: #22c55e;
+            font-weight: bold;
+        }
+        .progress-bar-bg {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: #22c55e;
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+        
+        .timeline {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-left: 3px solid #ddd;
+            transition: all 0.3s ease;
+        }
+        .timeline-item.completed {
+            border-left-color: #22c55e;
+            background: rgba(34,197,94,0.05);
+        }
+        .timeline-icon {
+            width: 30px;
+            font-size: 18px;
+            margin-right: 15px;
+        }
+        .timeline-content {
+            flex: 1;
+        }
+        .timeline-status {
+            font-weight: bold;
+            color: #333;
+        }
+        .timeline-time {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .order-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .order-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid #e5e7eb;
+            transition: 0.2s;
+        }
+        .order-item:hover {
+            border-color: #3b82f6;
+            transform: translateX(5px);
+        }
+        
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .live-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #22c55e;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1000;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        .live-badge:hover {
+            transform: scale(1.05);
+        }
+        
+        .countdown-timer {
+            font-size: 14px;
+            color: #f59e0b;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: bold;
+            padding: 8px;
+            background: #fef3c7;
+            border-radius: 8px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        h3, h4 {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container track-container">
+        <h1>📦 Track Your Order</h1>
+        
+        <div class="tab-container">
+            <button class="tab-btn active" onclick="showTab('order')">🔍 Track by Order ID</button>
+            <button class="tab-btn" onclick="showTab('user')">👤 View My Orders</button>
+        </div>
+        
+        <div id="orderTab" class="search-section">
+            <h3>Enter Order ID to Track</h3>
+            <div class="search-box">
+                <input type="number" id="orderIdInput" placeholder="Example: 71, 72, 73" value="71">
+                <button onclick="startTracking()">🎯 Track Order</button>
+                <button onclick="stopTracking()" style="background: #ef4444;">⏹️ Stop Tracking</button>
+            </div>
+            <div id="orderDetails">
+                <div class="loading">Enter an Order ID and click "Track Order"</div>
+            </div>
+        </div>
+        
+        <div id="userTab" class="search-section" style="display: none;">
+            <h3>Enter Your User ID</h3>
+            <div class="search-box">
+                <input type="number" id="userIdInput" placeholder="Example: 23 (Sudhher), 24 (Chirag), 25 (Nandhini)">
+                <button onclick="getUserOrders()">Show My Orders →</button>
+            </div>
+            <div id="userOrders"></div>
+        </div>
+        
+        <button class="btn track" onclick="location.href='/'">⬅ Back to Home</button>
+    </div>
+
+    <div class="live-badge" id="liveBadge" onclick="stopTracking()">
+        🔴 LIVE Tracking OFF
+    </div>
+
+    <script>
+        let trackingInterval = null;
+        let currentOrderId = null;
+        
+        function startTracking() {
+            const orderId = document.getElementById("orderIdInput").value;
+            if (!orderId) {
+                document.getElementById("orderDetails").innerHTML = '<div class="error-message">❌ Please enter an Order ID</div>';
+                return;
+            }
+            
+            currentOrderId = orderId;
+            
+            if (trackingInterval) {
+                clearInterval(trackingInterval);
+            }
+            
+            trackOrderById(orderId);
+            
+            trackingInterval = setInterval(() => {
+                trackOrderById(currentOrderId);
+            }, 2000);
+            
+            document.getElementById("liveBadge").innerHTML = "🟢 LIVE Tracking ON (updates every 2 sec)";
+            document.getElementById("liveBadge").style.background = "#ef4444";
+        }
+        
+        function stopTracking() {
+            if (trackingInterval) {
+                clearInterval(trackingInterval);
+                trackingInterval = null;
+            }
+            currentOrderId = null;
+            document.getElementById("liveBadge").innerHTML = "🔴 LIVE Tracking OFF";
+            document.getElementById("liveBadge").style.background = "#22c55e";
+        }
+        
+        function trackOrderById(orderId) {
+            if (!orderId) return;
+            
+            Promise.all([
+                fetch(`/order_status/${orderId}`).then(r => r.json()),
+                fetch(`/order_history/${orderId}`).then(r => r.json())
+            ])
+            .then(([statusData, historyData]) => {
+                if (statusData.error) {
+                    if (trackingInterval) {
+                        document.getElementById("orderDetails").innerHTML = '<div class="error-message">⏳ Waiting for Order #' + orderId + ' to be created...</div>';
+                    }
+                    return;
+                }
+                displayOrderDetails(orderId, statusData, historyData);
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        }
+        
+        function displayOrderDetails(orderId, statusData, historyData) {
+            const status = statusData.status || "Order Placed";
+            let statusClass = "status-placed";
+            let step = 1;
+            
+            if (status === "Preparing") {
+                statusClass = "status-preparing";
+                step = 2;
+            } else if (status === "Out for Delivery") {
+                statusClass = "status-out";
+                step = 3;
+            } else if (status === "Delivered") {
+                statusClass = "status-delivered";
+                step = 4;
+            }
+            
+            const progressPercent = step * 25;
+            
+            let timelineHtml = '<div class="timeline"><h4>📋 Order Timeline</h4>';
+            const steps = ["Order Placed", "Preparing", "Out for Delivery", "Delivered"];
+            
+            steps.forEach(stepStatus => {
+                const historyItem = historyData.find(h => h.status === stepStatus);
+                const isCompleted = historyItem !== undefined;
+                const timestamp = historyItem ? new Date(historyItem.updated_time).toLocaleTimeString() : "Waiting...";
+                
+                let icon = "⏳";
+                if (isCompleted) {
+                    if (stepStatus === "Order Placed") icon = "🟠";
+                    else if (stepStatus === "Preparing") icon = "🔵";
+                    else if (stepStatus === "Out for Delivery") icon = "🟣";
+                    else if (stepStatus === "Delivered") icon = "🟢";
+                }
+                
+                timelineHtml += `
+                    <div class="timeline-item ${isCompleted ? 'completed' : ''}">
+                        <div class="timeline-icon">${icon}</div>
+                        <div class="timeline-content">
+                            <div class="timeline-status">${stepStatus}</div>
+                            <div class="timeline-time">${timestamp}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            timelineHtml += '</div>';
+            
+            let countdownHtml = '';
+            if (status === "Order Placed") {
+                countdownHtml = '<div class="countdown-timer">⏰ Restaurant is preparing your order... Status will update in ~5 seconds!</div>';
+            } else if (status === "Preparing") {
+                countdownHtml = '<div class="countdown-timer">🍳 Your food is being cooked! Out for delivery in ~15 seconds...</div>';
+            } else if (status === "Out for Delivery") {
+                countdownHtml = '<div class="countdown-timer">🚚 Delivery partner is on the way! Delivery in ~30 seconds...</div>';
+            } else if (status === "Delivered") {
+                countdownHtml = '<div class="countdown-timer" style="background: #dcfce7; color: #16a34a;">✅ Order Delivered! Enjoy your meal! 🍕</div>';
+            }
+            
+            const html = `
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-id">📦 Order #${orderId}</span>
+                        <span class="status-badge ${statusClass}">${status}</span>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-steps">
+                            <span class="step ${step >= 1 ? 'active' : ''}">📝 Placed</span>
+                            <span class="step ${step >= 2 ? 'active' : ''}">🍳 Preparing</span>
+                            <span class="step ${step >= 3 ? 'active' : ''}">🚚 Out for Delivery</span>
+                            <span class="step ${step >= 4 ? 'active' : ''}">✅ Delivered</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-fill" style="width: ${progressPercent}%;"></div>
+                        </div>
+                    </div>
+                    
+                    ${countdownHtml}
+                    ${timelineHtml}
+                </div>
+            `;
+            
+            document.getElementById("orderDetails").innerHTML = html;
+        }
+        
+        function getUserOrders() {
+            const userId = document.getElementById("userIdInput").value;
+            if (!userId) {
+                document.getElementById("userOrders").innerHTML = '<div class="error-message">❌ Please enter a User ID</div>';
+                return;
+            }
+            
+            document.getElementById("userOrders").innerHTML = '<div class="loading">Loading your orders...</div>';
+            
+            fetch(`/user_orders/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error || data.message || data.length === 0) {
+                        document.getElementById("userOrders").innerHTML = `<div class="error-message">❌ No orders found for User #${userId}</div>`;
+                        return;
+                    }
+                    displayUserOrders(data, userId);
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    document.getElementById("userOrders").innerHTML = '<div class="error-message">❌ Failed to fetch orders</div>';
+                });
+        }
+        
+        function displayUserOrders(orders, userId) {
+            if (orders.length === 0) {
+                document.getElementById("userOrders").innerHTML = `<div class="error-message">❌ No orders found for User #${userId}</div>`;
+                return;
+            }
+            
+            let ordersHtml = `<h3>📋 Your Orders (${orders.length} total)</h3><div class="order-list">`;
+            
+            orders.forEach(order => {
+                let statusClass = "status-placed";
+                let statusIcon = "🟠";
+                if (order.status === "Preparing") {
+                    statusClass = "status-preparing";
+                    statusIcon = "🔵";
+                } else if (order.status === "Out for Delivery") {
+                    statusClass = "status-out";
+                    statusIcon = "🟣";
+                } else if (order.status === "Delivered") {
+                    statusClass = "status-delivered";
+                    statusIcon = "🟢";
+                }
+                
+                ordersHtml += `
+                    <div class="order-item" onclick="selectOrder(${order.order_id})">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <strong style="font-size: 16px;">${statusIcon} Order #${order.order_id}</strong>
+                            <span class="status-badge ${statusClass}" style="font-size: 11px;">${order.status}</span>
+                        </div>
+                        <div style="margin-top: 8px; color: #666;">
+                            📅 ${new Date(order.order_time).toLocaleString()}
+                        </div>
+                        <div style="margin-top: 5px; color: #22c55e; font-weight: bold;">
+                            💰 Total: ₹${parseFloat(order.total_amount).toFixed(2)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            ordersHtml += '</div>';
+            document.getElementById("userOrders").innerHTML = ordersHtml;
+        }
+        
+        function selectOrder(orderId) {
+            document.getElementById("orderIdInput").value = orderId;
+            showTab('order');
+            startTracking();
+        }
+        
+        function showTab(tab) {
+            const orderTab = document.getElementById("orderTab");
+            const userTab = document.getElementById("userTab");
+            const btns = document.querySelectorAll(".tab-btn");
+            
+            btns.forEach(btn => btn.classList.remove("active"));
+            
+            if (tab === 'order') {
+                orderTab.style.display = "block";
+                userTab.style.display = "none";
+                btns[0].classList.add("active");
+            } else {
+                if (trackingInterval) {
+                    clearInterval(trackingInterval);
+                    trackingInterval = null;
+                }
+                orderTab.style.display = "none";
+                userTab.style.display = "block";
+                btns[1].classList.add("active");
+                document.getElementById("liveBadge").innerHTML = "🔴 LIVE Tracking OFF";
+                document.getElementById("liveBadge").style.background = "#22c55e";
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Place Order</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .order-container { max-width: 800px; margin: 0 auto; }
+        
+        /* Search Bar Styles */
+        .order-search-bar {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .order-search-input {
+            flex: 2;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .order-filter-select {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        /* Colorful menu items */
+        .menu-items-list { display: flex; flex-direction: column; gap: 15px; margin: 20px 0; max-height: 500px; overflow-y: auto; }
+        
+        .menu-item-row {
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+            color: white;
+            flex-wrap: wrap;
+        }
+        
+        .menu-item-row:hover { transform: translateX(5px); }
+        
+        .item-info { flex: 2; text-align: left; min-width: 150px; }
+        .item-name { font-size: 18px; font-weight: bold; color: white; }
+        .item-restaurant { font-size: 14px; color: rgba(255,255,255,0.8); margin-top: 5px; }
+        .item-price { flex: 1; font-size: 18px; font-weight: bold; color: rgba(255,255,255,0.95); min-width: 80px; }
+        
+        .quantity-controls { display: flex; align-items: center; gap: 8px; min-width: 100px; justify-content: center; }
+        .qty-btn { background: rgba(255,255,255,0.3); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 18px; font-weight: bold; transition: 0.2s; }
+        .qty-btn:hover { background: rgba(255,255,255,0.5); transform: scale(1.1); }
+        .qty-value { font-size: 18px; font-weight: bold; min-width: 30px; text-align: center; color: white; }
+        
+        .add-to-cart-btn {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: 0.2s;
+            margin-left: 10px;
+            min-width: 100px;
+        }
+        
+        .add-to-cart-btn:hover {
+            background: #16a34a;
+            transform: scale(1.05);
+        }
+        
+        /* Color classes for order items */
+        .order-color-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .order-color-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .order-color-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .order-color-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .order-color-5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .order-color-6 { background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); }
+        .order-color-7 { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+        .order-color-8 { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); }
+        .order-color-9 { background: linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%); }
+        .order-color-10 { background: linear-gradient(135deg, #8ec5fc 0%, #e0c3fc 100%); }
+        
+        .order-summary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-top: 20px; }
+        .summary-row { display: flex; justify-content: space-between; padding: 10px 0; }
+        .summary-total { font-size: 24px; font-weight: bold; border-top: 2px solid white; margin-top: 10px; padding-top: 10px; }
+        .place-order-btn { background: #22c55e; width: 100%; padding: 15px; font-size: 18px; font-weight: bold; margin-top: 20px; border-radius: 12px; cursor: pointer; border: none; }
+        .place-order-btn:hover { background: #16a34a; transform: scale(1.02); }
+        
+        .user-input input { width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        .success-message { background: #22c55e; color: white; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center; }
+        .error-message { background: #ef4444; color: white; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center; }
+        
+        h2, h3, label { color: #333; }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 18px;
+        }
+        
+        .cart-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ef4444;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: 0.2s;
+        }
+        
+        .cart-badge:hover {
+            transform: scale(1.05);
+            background: #dc2626;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .view-cart-btn {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .view-cart-btn:hover {
+            background: #d97706;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cart Badge -->
+    <div class="cart-badge" onclick="location.href='/cart_page'">
+        🛒 Cart (<span id="cartCountBadge">0</span>)
+    </div>
+
+    <div class="container order-container">
+        <h1>🛒 Place Your Order</h1>
+        
+        <div class="user-input">
+            <label>👤 Enter Your User ID:</label>
+            <input type="number" id="userId" placeholder="Example: 23 (Sudhher), 24 (Chirag), 25 (Nandhini)" value="23">
+            <button onclick="loadCartCount()" style="margin-top: 10px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;">Refresh Cart</button>
+        </div>
+        
+        <h2>📋 Select Items</h2>
+        
+        <!-- Search and Filter Bar for Order Page -->
+        <div class="order-search-bar">
+            <input type="text" id="searchFood" class="order-search-input" placeholder="🔍 Search for food... (e.g., Pizza, Burger, Coffee)">
+            <select id="filterRestaurant" class="order-filter-select">
+                <option value="">All Restaurants</option>
+            </select>
+        </div>
+        
+        <div id="menu-items" class="menu-items-list"><p>Loading menu items...</p></div>
+        
+        <div class="order-summary" id="orderSummary" style="display: none;">
+            <h3>📊 Order Summary</h3>
+            <div id="summaryDetails"></div>
+            <div class="button-group">
+                <div class="place-order-btn btn" onclick="submitOrder()" style="flex: 2;">✅ Place Order Now</div>
+                <div class="view-cart-btn" onclick="location.href='/cart_page'" style="flex: 1;">🛒 View Cart</div>
+            </div>
+        </div>
+        
+        <button class="btn track" onclick="location.href='/'">⬅ Back to Home</button>
+    </div>
+    
+    <div id="message"></div>
+
+    <script>
+        let menuData = [];
+        let filteredMenuData = [];
+        let quantities = {};
+        
+        function getFoodEmoji(itemName) {
+            const name = itemName.toLowerCase();
+            if (name.includes('pizza')) return '🍕';
+            if (name.includes('burger')) return '🍔';
+            if (name.includes('biryani')) return '🍛';
+            if (name.includes('chicken')) return '🍗';
+            if (name.includes('coffee')) return '☕';
+            if (name.includes('shake')) return '🥤';
+            if (name.includes('dosa')) return '🥞';
+            if (name.includes('sandwich')) return '🥪';
+            if (name.includes('fries')) return '🍟';
+            if (name.includes('noodles')) return '🍜';
+            if (name.includes('rice')) return '🍚';
+            if (name.includes('pasta')) return '🍝';
+            return '🍽️';
+        }
+        
+        function loadCartCount() {
+            const userId = document.getElementById("userId").value;
+            if (userId) {
+                fetch(`/api/cart/count/${userId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById("cartCountBadge").innerText = data.count || 0;
+                    })
+                    .catch(error => console.error("Error:", error));
+            }
+        }
+        
+        function loadMenu() {
+            fetch("/api/menu")
+                .then(response => response.json())
+                .then(data => {
+                    menuData = data;
+                    filteredMenuData = data;
+                    displayMenuItems(filteredMenuData);
+                    
+                    
+                    const restaurants = [...new Set(data.map(item => item.restaurant))];
+                    const filterSelect = document.getElementById("filterRestaurant");
+                    restaurants.forEach(rest => {
+                        const option = document.createElement("option");
+                        option.value = rest;
+                        option.textContent = rest;
+                        filterSelect.appendChild(option);
+                    });
+                    
+                    loadCartCount();
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    document.getElementById("menu-items").innerHTML = "<p>❌ Failed to load menu</p>";
+                });
+        }
+        
+        function displayMenuItems(items) {
+            const menuDiv = document.getElementById("menu-items");
+            menuDiv.innerHTML = "";
+            
+            if (items.length === 0) {
+                menuDiv.innerHTML = '<div class="no-results">❌ No items found. Try searching something else!</div>';
+                return;
+            }
+            
+            items.forEach((item, index) => {
+                const itemId = item.item_id;
+                if (quantities[itemId] === undefined) quantities[itemId] = 0;
+                
+                const colorClass = `order-color-${(index % 10) + 1}`;
+                const emoji = getFoodEmoji(item.item_name);
+                
+                const div = document.createElement("div");
+                div.className = `menu-item-row ${colorClass}`;
+                div.innerHTML = `
+                    <div class="item-info">
+                        <div class="item-name">${emoji} ${item.item_name}</div>
+                        <div class="item-restaurant">🏪 ${item.restaurant}</div>
+                    </div>
+                    <div class="item-price">💰 ₹${parseFloat(item.price).toFixed(2)}</div>
+                    <div class="quantity-controls">
+                        <button class="qty-btn" onclick="changeQuantity(${itemId}, -1)">-</button>
+                        <span class="qty-value" id="qty-${itemId}">${quantities[itemId]}</span>
+                        <button class="qty-btn" onclick="changeQuantity(${itemId}, 1)">+</button>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="addToCart(${itemId})">🛒 Add to Cart</button>
+                `;
+                menuDiv.appendChild(div);
+            });
+        }
+        
+        function filterMenu() {
+            const searchTerm = document.getElementById("searchFood").value.toLowerCase();
+            const restaurant = document.getElementById("filterRestaurant").value;
+            
+            filteredMenuData = menuData.filter(item => {
+                const matchesSearch = item.item_name.toLowerCase().includes(searchTerm);
+                const matchesRestaurant = !restaurant || item.restaurant === restaurant;
+                return matchesSearch && matchesRestaurant;
+            });
+            
+            displayMenuItems(filteredMenuData);
+        }
+        
+        function changeQuantity(itemId, delta) {
+            const newQty = quantities[itemId] + delta;
+            if (newQty >= 0 && newQty <= 99) {
+                quantities[itemId] = newQty;
+                const qtyElement = document.getElementById(`qty-${itemId}`);
+                if (qtyElement) qtyElement.textContent = newQty;
+                updateOrderSummary();
+            }
+        }
+        
+        function addToCart(itemId) {
+            const userId = document.getElementById("userId").value;
+            const quantity = quantities[itemId];
+            
+            if (!userId) {
+                showMessage("❌ Please enter User ID first", "error");
+                return;
+            }
+            
+            if (quantity === 0 || !quantity) {
+                showMessage("❌ Please select quantity first (use + button)", "error");
+                return;
+            }
+            
+            const item = menuData.find(i => i.item_id == itemId);
+            const itemName = item ? item.item_name : "Item";
+            
+            fetch("/api/cart/add", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    user_id: parseInt(userId), 
+                    item_id: itemId,
+                    quantity: quantity
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showMessage(`❌ ${data.error}`, "error");
+                } else {
+                    showMessage(`✅ ${quantity} x ${itemName} added to cart!`, "success");
+                    
+                    quantities[itemId] = 0;
+                    document.getElementById(`qty-${itemId}`).textContent = "0";
+                    updateOrderSummary();
+                    loadCartCount();
+                    
+                    
+                    const badge = document.querySelector('.cart-badge');
+                    badge.style.transform = 'scale(1.2)';
+                    setTimeout(() => { badge.style.transform = 'scale(1)'; }, 300);
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                showMessage("❌ Failed to add to cart", "error");
+            });
+        }
+        
+        function updateOrderSummary() {
+            const summaryDiv = document.getElementById("orderSummary");
+            const summaryDetails = document.getElementById("summaryDetails");
+            
+            let selectedItems = [];
+            let total = 0;
+            
+            for (let itemId in quantities) {
+                const qty = quantities[itemId];
+                if (qty > 0) {
+                    const item = menuData.find(i => i.item_id == itemId);
+                    if (item) {
+                        const itemTotal = item.price * qty;
+                        total += itemTotal;
+                        selectedItems.push({ name: item.item_name, qty: qty, total: itemTotal });
+                    }
+                }
+            }
+            
+            if (selectedItems.length > 0) {
+                summaryDiv.style.display = "block";
+                let html = "";
+                selectedItems.forEach(item => {
+                    html += `<div class="summary-row"><span>${item.name} x ${item.qty}</span><span>₹${item.total.toFixed(2)}</span></div>`;
+                });
+                html += `<div class="summary-row summary-total"><span>💰 Total Amount:</span><span>₹${total.toFixed(2)}</span></div>`;
+                summaryDetails.innerHTML = html;
+            } else {
+                summaryDiv.style.display = "none";
+            }
+        }
+        
+        function submitOrder() {
+            const userId = document.getElementById("userId").value;
+            if (!userId) { showMessage("❌ Please enter User ID", "error"); return; }
+            
+            const orderItems = [];
+            for (let itemId in quantities) {
+                const qty = quantities[itemId];
+                if (qty > 0) orderItems.push({ item_id: parseInt(itemId), quantity: qty });
+            }
+            
+            if (orderItems.length === 0) { showMessage("❌ Please select at least one item", "error"); return; }
+            
+            fetch("/place_order", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user_id: parseInt(userId), items: orderItems })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showMessage(`❌ Error: ${data.error}`, "error");
+                } else {
+                    showMessage(`✅ Order placed successfully! Order ID: ${data.order_id} | Total: ₹${data.total_amount.toFixed(2)}`, "success");
+                    for (let itemId in quantities) {
+                        quantities[itemId] = 0;
+                        const qtyElement = document.getElementById(`qty-${itemId}`);
+                        if (qtyElement) qtyElement.textContent = "0";
+                    }
+                    updateOrderSummary();
+                }
+            })
+            .catch(error => { console.error("Error:", error); showMessage("❌ Failed to place order", "error"); });
+        }
+        
+        function showMessage(msg, type) {
+            const messageDiv = document.getElementById("message");
+            messageDiv.innerHTML = `<div class="${type}-message">${msg}</div>`;
+            setTimeout(() => { messageDiv.innerHTML = ""; }, 5000);
+        }
+        
+        
+        document.getElementById("searchFood").addEventListener("keyup", filterMenu);
+        document.getElementById("filterRestaurant").addEventListener("change", filterMenu);
+        document.getElementById("userId").addEventListener("change", loadCartCount);
+        
+        loadMenu();
+    </script>
+
+</body>
+</html>

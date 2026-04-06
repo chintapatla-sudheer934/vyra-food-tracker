@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Menu</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        /* Colorful card styles */
+        .card {
+            margin: 15px;
+            padding: 20px;
+            border-radius: 12px;
+            width: 250px;
+            text-align: left;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            color: white;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .card h3 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: white;
+        }
+        
+        .card p {
+            font-family: 'Roboto', sans-serif;
+            margin: 5px 0;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        /* Different colors for each card based on position */
+        .color-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .color-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .color-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .color-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .color-5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .color-6 { background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); }
+        .color-7 { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+        .color-8 { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); }
+        .color-9 { background: linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%); }
+        .color-10 { background: linear-gradient(135deg, #8ec5fc 0%, #e0c3fc 100%); }
+        
+        /* Search and Filter styles */
+        .search-bar {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .search-input {
+            padding: 12px;
+            width: 60%;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+        
+        .filter-select {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🍔 Menu</h1>
+
+        <!-- Search and Filter Bar -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search food...">
+            <select id="restaurantFilter" class="filter-select">
+                <option value="">All Restaurants</option>
+            </select>
+        </div>
+
+        <!-- Menu Items will come here -->
+        <div id="menu-list"></div>
+
+        <button class="btn track" onclick="location.href='/'">⬅ Back</button>
+    </div>
+
+    <script>
+        let allMenuItems = [];
+        
+        
+        fetch("/api/menu")
+        .then(response => response.json())
+        .then(data => {
+            allMenuItems = data;
+            displayMenuItems(allMenuItems);
+            
+            
+            const restaurants = [...new Set(data.map(item => item.restaurant))];
+            const filterSelect = document.getElementById("restaurantFilter");
+            restaurants.forEach(rest => {
+                const option = document.createElement("option");
+                option.value = rest;
+                option.textContent = rest;
+                filterSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            document.getElementById("menu-list").innerHTML = "<p>❌ Failed to load menu</p>";
+        });
+        
+        function displayMenuItems(items) {
+            const menuDiv = document.getElementById("menu-list");
+            menuDiv.innerHTML = "";
+            
+            if (items.length === 0) {
+                menuDiv.innerHTML = "<p>No items found</p>";
+                return;
+            }
+            
+            items.forEach((item, index) => {
+                const div = document.createElement("div");
+                
+                const colorClass = `color-${(index % 10) + 1}`;
+                div.className = `card ${colorClass}`;
+                
+                
+                const emoji = getFoodEmoji(item.item_name);
+                
+                div.innerHTML = `
+                    <h3>${emoji} ${item.item_name}</h3>
+                    <p>💰 ₹${parseFloat(item.price).toFixed(2)}</p>
+                    <p>🏪 ${item.restaurant}</p>
+                `;
+                menuDiv.appendChild(div);
+            });
+        }
+        
+        function getFoodEmoji(itemName) {
+            const name = itemName.toLowerCase();
+            if (name.includes('pizza')) return '🍕';
+            if (name.includes('burger')) return '🍔';
+            if (name.includes('biryani')) return '🍛';
+            if (name.includes('chicken')) return '🍗';
+            if (name.includes('pasta')) return '🍝';
+            if (name.includes('coffee')) return '☕';
+            if (name.includes('shake')) return '🥤';
+            if (name.includes('ice cream')) return '🍦';
+            if (name.includes('dosa')) return '🥞';
+            if (name.includes('sandwich')) return '🥪';
+            if (name.includes('fries')) return '🍟';
+            if (name.includes('noodles')) return '🍜';
+            if (name.includes('rice')) return '🍚';
+            return '🍽️';
+        }
+        
+        
+        document.getElementById("searchInput").addEventListener("keyup", filterMenu);
+        document.getElementById("restaurantFilter").addEventListener("change", filterMenu);
+        
+        function filterMenu() {
+            const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+            const restaurant = document.getElementById("restaurantFilter").value;
+            
+            const filtered = allMenuItems.filter(item => {
+                const matchesSearch = item.item_name.toLowerCase().includes(searchTerm);
+                const matchesRestaurant = !restaurant || item.restaurant === restaurant;
+                return matchesSearch && matchesRestaurant;
+            });
+            displayMenuItems(filtered);
+        }
+    </script>
+
+</body>
+</html>
