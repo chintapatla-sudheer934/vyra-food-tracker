@@ -18,7 +18,7 @@
 ## 🏷️ Logo
 
 <p align="center">
-  <img src="static/images/logo.png" alt="Vyra Logo" width="300">
+  <img src="https://raw.githubusercontent.com/chintapatla-sudheer934/vyra-food-tracker/main/VYRA%20Food%20Tracker/static/images/logo.png" alt="Vyra Logo" width="300">
 </p>
 
 ---
@@ -101,35 +101,21 @@ Whether you're a student learning full-stack development, a beginner exploring F
 ### 🏠 Home Page
 *Main landing page with navigation to all features*
 
-![Home Page](Screenshots/HOME%20PAGE.png)
+![Home Page](https://raw.githubusercontent.com/chintapatla-sudheer934/vyra-food-tracker/main/VYRA%20Food%20Tracker/Screenshots/HOME%20PAGE.png)
 
 ---
 
 ### 🍽️ Menu Page
 *Browse food items with search and restaurant filter*
 
-![Menu Page](Screenshots/Menu.png)
+![Menu Page](https://raw.githubusercontent.com/chintapatla-sudheer934/vyra-food-tracker/main/VYRA%20Food%20Tracker/Screenshots/Menu.png)
 
 ---
 
 ### 🛒 Place Order Page
 *Add items to cart with quantity controls*
 
-![Place Order Page](Screenshots/Place%20Order.png)
-
----
-
-### 💼 Cart Page
-*Review cart, update quantities, remove items, and checkout*
-
-![Cart Page](Screenshots/Cart.png)
-
----
-
-### 📦 Track Order Page
-*Live order tracking with progress bar and auto-refresh every 2 seconds*
-
-![Track Order Page](Screenshots/Track%20Order.png)
+![Place Order Page](https://raw.githubusercontent.com/chintapatla-sudheer934/vyra-food-tracker/main/VYRA%20Food%20Tracker/Screenshots/Place%20Order.png)
 
 ---
 
